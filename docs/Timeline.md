@@ -25,7 +25,7 @@
 ---
 
 #### **Week 4**  
-- Build BiLSTM with attention layer; initialize training with GloVe embeddings  
+- Build BiLSTM and BiLSTM with attention layer; initialize training with GloVe embeddings  
 
 
 ---
