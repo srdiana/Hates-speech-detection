@@ -3,9 +3,6 @@ Solving hate speech detection problem using BiLSTM with attention layer
 
 Paper about GloVe https://nlp.stanford.edu/pubs/glove.pdf
 
-
-Here's a full report based on your notebook results and the classification metrics. Your model evaluated performance with **imbalanced data** and also tested with **balancing techniques applied**. Let’s break down the key insights.
-
 ---
 
 ###  Overview of Results
