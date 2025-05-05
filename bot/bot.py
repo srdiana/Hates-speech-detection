@@ -35,9 +35,9 @@ logger = logging.getLogger(__name__)
 SEARCH, SELECT = range(2)
 
 # ——— Параметры окружения —————————————————————————————————————————————————————————————————————
-TELEGRAM_TOKEN      = os.getenv("TELEGRAM_TOKEN", "7982003369:AAGsyvs4MTXUCTYcdAoIwBRLMJCfA6KRhtU")
+TELEGRAM_TOKEN      = os.getenv("TELEGRAM_TOKEN", "")
 API_BASE_URL        = os.getenv("MOVIE_API_BASE_URL", "https://api.kinopoisk.dev")
-MOVIE_API_KEY       = os.getenv("MOVIE_API_KEY", "XDKQYYR-BBY4A5P-NKGN64P-8Q4ZPGZ")
+MOVIE_API_KEY       = os.getenv("MOVIE_API_KEY", "")
 
 WEIGHTS_PATH     = os.getenv("MODEL_WEIGHTS_PATH", "balanced_nn_weights.pth")
 LABELS_PATH      = os.getenv("LABELS_PATH", "label_classes.npy")
