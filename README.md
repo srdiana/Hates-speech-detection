@@ -173,11 +173,3 @@ This project aims to classify movie reviews from Kinopoisk into three sentiment 
    ```
 3. Follow the notebooks in the `notebooks/` directory for data analysis and model training
 4. Use the Telegram bot in the `bot/` directory for real-time review classification
-
-## Dependencies
-
-See `requirements.txt` for a complete list of dependencies.
-
-## Contributing
-
-Feel free to submit issues and enhancement requests!
