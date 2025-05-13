@@ -33,9 +33,9 @@ logger = logging.getLogger(__name__)
 SEARCH, SELECT = range(2)
 
 # ——— Параметры окружения —————————————————————————————————————————————————————————————————————
-TELEGRAM_TOKEN      = os.getenv("TELEGRAM_TOKEN", "7982003369:AAGsyvs4MTXUCTYcdAoIwBRLMJCfA6KRhtU")
+TELEGRAM_TOKEN      = os.getenv("TELEGRAM_TOKEN", "")
 API_BASE_URL        = os.getenv("MOVIE_API_BASE_URL", "https://api.kinopoisk.dev")
-MOVIE_API_KEY       = os.getenv("MOVIE_API_KEY", "79JSGMB-HY34SGZ-J1KEM94-EYRW6XV")
+MOVIE_API_KEY       = os.getenv("MOVIE_API_KEY", "")
 
 WEIGHTS_PATH     = os.getenv("MODEL_WEIGHTS_PATH", "/Users/sozlaa/Hates-speech-detection/bot/ML/best_model (1).pth")
 LABELS_PATH      = os.getenv("LABELS_PATH", "/Users/sozlaa/Hates-speech-detection/bot/ML/label_classes (1).npy")
