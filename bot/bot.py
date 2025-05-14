@@ -38,11 +38,11 @@ API_BASE_URL        = os.getenv("MOVIE_API_BASE_URL", "https://api.kinopoisk.dev
 MOVIE_API_KEY       = os.getenv("MOVIE_API_KEY", "")
 
 WEIGHTS_PATH     = os.getenv("MODEL_WEIGHTS_PATH", "/Users/sozlaa/Hates-speech-detection/bot/ML/best_model (1).pth")
-LABELS_PATH      = os.getenv("LABELS_PATH", "/Users/sozlaa/Hates-speech-detection/bot/ML/label_classes (1).npy")
+LABELS_PATH      = os.getenv("LABELS_PATH", "/Users/sozlaa/Hates-speech-detection/bot/ML/label_classes (3).npy")
 EMBEDDING_MODEL = os.getenv(
     "EMBEDDING_MODEL",
-    str(Path("/Users/sozlaa/Hates-speech-detection/bot/ML/embedding_model_1").resolve())
-)
+    str(Path("/Users/sozlaa/Hates-speech-detection/bot/ML/embedding_model_312").resolve())
+) 
 
 if not TELEGRAM_TOKEN or not MOVIE_API_KEY:
     logger.error("Set TELEGRAM_TOKEN and MOVIE_API_KEY")
@@ -116,7 +116,7 @@ filtered  = {
 model.load_state_dict(filtered, strict=False)
 model.eval()
 
-# ——— 5) Функция классификации —————————————————————————————————————————————————————
+# ——— 5) classify_reviews и остальной код бота —————————————————————————————————————
 def classify_reviews(reviews):
     counts = Counter()
     if not reviews:
@@ -131,7 +131,6 @@ def classify_reviews(reviews):
     for p in preds:
         counts[classes[p]] += 1
     return counts
-
 # ——— 6) API helpers —————————————————————————————————————————————————————————————
 def search_movies(query, limit=10, page=1):
     resp = requests.get(
@@ -172,16 +171,27 @@ def get_reviews(movie_id, limit=50):
 # ——— 7) Форматирование и хендлеры —————————————————————————————————————————————————————
 def _format_review_caption(details, counts, total):
     lines = [f"<b>{details['title']}</b>"]
+
+    # Описание
     if desc := details.get("description"):
         if len(desc) > 300:
-            desc = desc[:300].rsplit(" ", 1)[0] + "…"
+            desc = desc[:300].rsplit(" ",1)[0] + "…"
         lines.append(f"<i>{desc}</i>\n")
-    # Описание меток
-    lines.append("0 – negative, 1 – neutral, 2 – positive\n")
-    lines.append(f"Total reviews: {total}\nDistribution:")
-    for lbl, cnt in counts.items():
-        pct = cnt / total * 100
-        lines.append(f"{lbl}: {cnt} ({pct:.1f}%)")
+
+    # Легенда
+    lines.append("0 — negative, 1 — neutral, 2 — positive\n")
+
+    # Общая статистика
+    lines.append(f"<b>Total reviews:</b> {total}")
+    lines.append(f"<b>Distribution:</b>")
+
+    # Для каждого числового кода берём строковое имя classes[lbl]
+    for lbl in (2, 1, 0):
+        name = classes[lbl]           # например classes[2] == "positive"
+        cnt  = counts.get(name, 0)    # теперь ищем counts["positive"]
+        pct  = cnt / total * 100 if total else 0.0
+        lines.append(f"  {lbl} — {name}: {cnt} ({pct:.1f}%)")
+
     return "\n".join(lines)
 
 
