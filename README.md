@@ -9,10 +9,11 @@ This project aims to classify movie reviews from Kinopoisk into three sentiment 
 ├── bot/                  # Telegram bot implementation for real-time text classification
 ├── docs/                 # Project documentation and reports
 ├── notebooks/           # Jupyter notebooks for model development and analysis
-│   ├── BiLSTM+CNN_implementation.ipynb  # Main model implementation
+│   ├── embeddings_creations  # notebooks with embeddings creation
+|   ├── baseline_implementations  # baseline models for different embeddings
 │   ├── ae_embeddings+baseline_implementation.ipynb  # Embeddings and baseline models
+|   ├── BiLSTM+CNN_implementation.ipynb  # Main model implementation
 │   └── EDA_rus_reviews.ipynb  # Exploratory data analysis
-├── fast_russian_embeddings.json  # Pre-trained embeddings file
 └── requirements.txt     # Project dependencies
 ```
 
@@ -67,9 +68,4 @@ For a complete list of dependencies, see `requirements.txt`.
 
 The BiLSTM-CNN hybrid model achieves the following performance metrics:
 
-- **Accuracy**: ~73% on test set
-- **Class-wise Performance**:
-  - Neutral: F1-score 
-  - Negative: F1-score 
-  - Positive: F1-score 
-
+- **Accuracy**: ~73% on test set (for the best training)
