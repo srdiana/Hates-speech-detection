@@ -5,6 +5,7 @@ import numpy as np
 from pathlib import Path
 from collections import Counter
 import random
+from lime.lime_text import LimeTextExplainer
 
 import torch
 import torch.nn as nn
@@ -50,6 +51,14 @@ if not TELEGRAM_TOKEN or not MOVIE_API_KEY:
 
 HEADERS = {"X-API-KEY": MOVIE_API_KEY, "Accept": "application/json"}
 device  = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+HELP_TEXT = (
+    "Привет! Я — бот для классификации отзывов о фильмах.\n\n"
+    "Доступные команды:\n"
+    "/start   — начать работу и выбрать фильм\n"
+    "/cancel  — отменить текущий запрос\n"
+    "/explain — получить ключевые слова LIME по последнему отзыву\n"
+    "/help    — показать это сообщение ещё раз\n"
+)
 
 # ——— 1) Эмбедер ———————————————————————————————————————————————————————————————
 logger.info(f"Loading embedder from {EMBEDDING_MODEL}")
@@ -115,6 +124,19 @@ filtered  = {
 }
 model.load_state_dict(filtered, strict=False)
 model.eval()
+
+explainer = LimeTextExplainer(class_names=classes)
+
+def predict_proba(texts):
+    """
+    texts: list[str]
+    возвращает np.array shape (n_samples, n_classes) с вероятностями
+    """
+    embs = embedder.encode(texts, convert_to_tensor=True, device=device, show_progress_bar=False)
+    with torch.no_grad():
+        logits = model(embs)
+        probs  = F.softmax(logits, dim=1).cpu().numpy()
+    return probs
 
 # ——— 5) classify_reviews и остальной код бота —————————————————————————————————————
 def classify_reviews(reviews):
@@ -198,6 +220,7 @@ def _format_review_caption(details, counts, total):
 def _show_movie_reviews(target, context: CallbackContext, movie_id: int):
     details = context.user_data["movies_map"][movie_id]
     revs    = get_reviews(movie_id, limit=50)
+    context.user_data["last_reviews"] = revs
     counts  = classify_reviews(revs)
     cap     = _format_review_caption(details, counts, len(revs))
     if details.get("poster"):
@@ -207,8 +230,15 @@ def _show_movie_reviews(target, context: CallbackContext, movie_id: int):
     return ConversationHandler.END
 
 def start(update: Update, context: CallbackContext):
-    update.message.reply_text("Привет! Введите название фильма:")
+    # Сначала показываем помощь
+    update.message.reply_text(HELP_TEXT, parse_mode="HTML")
+    # Затем приглашаем ввести название
+    update.message.reply_text("Введите название фильма для поиска:")
     return SEARCH
+
+
+def help_handler(update: Update, context: CallbackContext):
+    update.message.reply_text(HELP_TEXT, parse_mode="HTML")
 
 def search_handler(update: Update, context: CallbackContext):
     q = update.message.text.strip()
@@ -248,9 +278,35 @@ def cancel(update: Update, context: CallbackContext):
     update.message.reply_text("Отменено.")
     return ConversationHandler.END
 
+def explain_handler(update: Update, context: CallbackContext):
+    # возьмём сохранённые в user_data отзывы последней сессии
+    revs = context.user_data.get("last_reviews", [])
+    if not revs:
+        return update.message.reply_text("Сначала выберите фильм и получите отзывы.")
+
+    text = revs[0]  # или объединить несколько отзывов
+    exp = explainer.explain_instance(
+        text,
+        predict_proba,
+        num_features=5,
+        num_samples=100
+    )
+    kws = [w for w,_ in exp.as_list()]
+    return update.message.reply_text(
+        "<b>Key words:</b> " + ", ".join(kws),
+        parse_mode="HTML"
+    )
+
 def main():
     updater = Updater(TELEGRAM_TOKEN)
-    dp      = updater.dispatcher
+    dp = updater.dispatcher
+
+    # 1) Общие команды
+    dp.add_handler(CommandHandler("help", help_handler))
+    dp.add_handler(CommandHandler("cancel", cancel))
+    dp.add_handler(CommandHandler("explain", explain_handler))
+
+    # 2) Conversation для /start → поиск → выбор фильма
     conv = ConversationHandler(
         entry_points=[CommandHandler("start", start)],
         states={
@@ -261,6 +317,7 @@ def main():
         allow_reentry=True,
     )
     dp.add_handler(conv)
+
     updater.start_polling()
     logger.info("Bot started.")
     updater.idle()
